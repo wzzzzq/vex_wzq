@@ -13,7 +13,7 @@ protected:
     double kp, ki, kd;
     double target, error_tol, D_tol;
     double I_max,
-        I_range;  // I < abs(IMAX); I starts to increase when P < IRangef
+        I_range;  // I < abs(IMAX); I starts to increase when P < IRange
     double output;
     double jump_time;
     MyTimer my_timer;
