@@ -16,7 +16,7 @@ using namespace std;
  * PID::update()
  * DirPID::update()
  * PosPID::update()
- * 
+ *
  * 样例使用方法：
  * PID pid;
  * pid.setTarget(100);
@@ -27,14 +27,15 @@ using namespace std;
  *      output = pid.getOutput();
  *      // do something with output
  * }
- * 
+ *
  */
 
 PID::PID() : first_time(true), arrived(false), I_max(20), I_range(50), jump_time(50), D_tol(10) { my_timer.reset(); }
 
 void PID::setFirstTime() { first_time = true; }
 
-void PID::setCoefficient(double _kp, double _ki, double _kd) {
+void PID::setCoefficient(double _kp, double _ki, double _kd)
+{
     kp = _kp;
     ki = _ki;
     kd = _kd;
@@ -49,41 +50,70 @@ void PID::setArrived(bool _arrived) { arrived = _arrived; }
 bool PID::targetArrived() { return arrived; }
 double PID::getOutput() { return output; }
 
-void PID::update(double input) {
-    error_curt = target - input;  // calculate current error
-    //TODO: calculate the contribution of P, I, D with kp, ki, kd
-
+void PID::update(double input)
+{
+    //使用速度式PID控制器
+    error_curt = target - input; // calculate current error
+    // TODO: calculate the contribution of P, I, D with kp, ki, kd
     
-    if (abs(error_curt) <= error_tol) {  // Exit when staying in tolerated region and
-                                        // maintaining a low enough speed
+    P = kp * (error_curt-error_prev);
+
+    I = ki *  error_curt;
+
+    D = kd * ((error_curt-error_prev)-error_dev);
+
+    if (abs(error_curt) <= error_tol)
+    { // Exit when staying in tolerated region and
+      // maintaining a low enough speed
         arrived = true;
     }
-    output = P + I + D;
+
+    error_prev = error_curt;
+    error_dev = (error_curt-error_prev);
+    output += P + I + D;
 }
 
 void PosPID::setTarget(Point p) { target_point = p; }
 
-void PosPID::update(Point input) {
+void PosPID::update(Point input)
+{
+    //使用位置式PID控制器
     Vector err = target_point - input;
-    error_curt = err.mod();  // calculate current error
-    //TODO: calculate the contribution of P, I, D with kp, ki, kd
+    error_curt = err.mod(); // calculate current error
+    // TODO: calculate the contribution of P, I, D with kp, ki, kd
+    P = kp * error_curt;
 
-    
-    if (abs(error_curt) <= error_tol) {  // Exit when staying in tolerated region and
-                                        // maintaining a low enough speed
+    error_int += error_curt;
+    I = ki * error_int;
+
+    D = kd * (error_curt - error_prev);
+
+    if (abs(error_curt) <= error_tol)
+    { // Exit when staying in tolerated region and
+      // maintaining a low enough speed
         arrived = true;
     }
+    error_prev = error_curt;
     output = P + I + D;
 }
 
-void DirPID::update(double input) {
-    error_curt = degNormalize(target - input);  // calculate current error
-    //TODO: calculate the contribution of P, I, D with kp, ki, kd
+void DirPID::update(double input)
+{
+    //使用位置式PID控制器
+    error_curt = degNormalize(target - input); // calculate current error
+    // TODO: calculate the contribution of P, I, D with kp, ki, kd
+    P = kp * error_curt;
 
-    
-    if (abs(error_curt) <= error_tol) {  // Exit when staying in tolerated region and
-                                        // maintaining a low enough speed
+    error_int += error_curt;
+    I = ki * error_int;
+
+    D = kd * (error_curt - error_prev);
+
+    if (abs(error_curt) <= error_tol)
+    { // Exit when staying in tolerated region and
+      // maintaining a low enough speed
         arrived = true;
     }
+    error_prev = error_curt;
     output = P + I + D;
 }

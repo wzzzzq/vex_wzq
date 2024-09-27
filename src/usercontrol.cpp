@@ -60,6 +60,17 @@ void intakerControl() {
     }
 }
 
+void new_motor_control(){
+    if(press_A){
+        new_motor.spin(fwd);
+    }
+    else if(press_B){
+        new_motor.spin(reverse);
+    }
+    else{
+        new_motor.stop();
+    }
+}
 void userControl() {
     modeDisplay('U');
     vex::thread *T = nullptr;
